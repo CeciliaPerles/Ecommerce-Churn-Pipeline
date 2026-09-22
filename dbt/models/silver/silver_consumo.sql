@@ -20,7 +20,23 @@ select
         when lower(trim(replace(replace(LastPurchaseCategory, '"', ''), chr(9), ''))) = 'books' then 'livros'
         else 'nao_informado'
     end as categoria_ultima_compra,
-    try_cast(RegistrationDate as date) as data_cadastro,
-    try_cast(LastPurchaseDate as date) as data_ultima_compra
+    -- as datas chegam em vários formatos: aaaa-mm-dd, dd-mm-aaaa, dd.mm.aaaa e, com barra,
+    -- tanto dd/mm/aaaa (maioria) quanto mm/dd/aaaa (americano). Com barra, tenta dd/mm primeiro;
+    -- mm/dd só é usado quando dd/mm é impossível (ex.: 02/22/2024). Datas ambíguas como
+    -- 05/03/2024 são lidas como dd/mm, mesmo que algumas tenham vindo no formato americano.
+    coalesce(
+        try_strptime(RegistrationDate, '%Y-%m-%d'),
+        try_strptime(RegistrationDate, '%d/%m/%Y'),
+        try_strptime(RegistrationDate, '%m/%d/%Y'),
+        try_strptime(RegistrationDate, '%d-%m-%Y'),
+        try_strptime(RegistrationDate, '%d.%m.%Y')
+    )::date as data_cadastro,
+    coalesce(
+        try_strptime(LastPurchaseDate, '%Y-%m-%d'),
+        try_strptime(LastPurchaseDate, '%d/%m/%Y'),
+        try_strptime(LastPurchaseDate, '%m/%d/%Y'),
+        try_strptime(LastPurchaseDate, '%d-%m-%Y'),
+        try_strptime(LastPurchaseDate, '%d.%m.%Y')
+    )::date as data_ultima_compra
 
-from {{ ref('bronze_ecommerce') }}
+from {{ source('bronze', 'ecommerce') }}

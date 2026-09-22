@@ -1,0 +1,9 @@
+version: 2
+
+sources:
+  - name: bronze
+    description: Dados brutos carregados no DuckDB pela DAG postgres_to_duckdb.
+    schema: bronze
+    tables:
+      - name: ecommerce
+        description: Cópia da tabela public.ecommerce do Postgres de origem, sem nenhum tratamento.

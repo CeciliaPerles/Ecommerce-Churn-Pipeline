@@ -1,4 +1,5 @@
 from airflow import DAG
+from airflow.datasets import Dataset
 from airflow.operators.python import PythonOperator
 from datetime import datetime
 import gdown
@@ -9,6 +10,9 @@ from sqlalchemy import create_engine
 FILE_ID = "1GXdnjst6mzpkgIkMxOQdy1-Qt0xAw5f4"
 OUTPUT_PATH = "/opt/airflow/data/arquivo_drive.csv"
 CONN = "postgresql+psycopg2://source_user:source_pass@postgres_source:5432/source_db"
+
+# Avisa o Airflow que a tabela foi atualizada: a DAG postgres_to_duckdb roda em seguida
+ECOMMERCE_POSTGRES = Dataset("postgres://postgres_source:5432/source_db/public/ecommerce")
 
 def inicio():
     print("Iniciando o processo.")
@@ -46,7 +50,8 @@ def fim():
 with DAG(
     dag_id='download_drive_csv',
     start_date=datetime(2026, 4, 29),
-    schedule_interval='0 0 * * *',  # Executa uma vez por dia 00h
+    schedule='0 0 * * *',  # Executa uma vez por dia 00h
+    catchup=False,  # Não executa os dias anteriores à ativação da DAG
 ) as dag:
 
     inicio_processo = PythonOperator(
@@ -62,6 +67,7 @@ with DAG(
     processa_dados = PythonOperator(
         task_id='processa_dados',
         python_callable=grava,
+        outlets=[ECOMMERCE_POSTGRES],
     )
 
     fim_processo = PythonOperator(
