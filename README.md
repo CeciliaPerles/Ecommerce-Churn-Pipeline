@@ -38,11 +38,13 @@ docker compose up -d --build
 
 1. No Airflow, ative as duas DAGs (elas começam pausadas).
 2. Rode `download_drive_csv` manualmente ou espere a meia-noite. `postgres_to_duckdb` roda sozinha em seguida.
-3. No Superset, em *Settings → Database Connections → + Database → DuckDB*, use:
-   - SQLAlchemy URI: `duckdb:////app/duckdb/warehouse.duckdb`
-   - *Advanced → Other → Engine Parameters*: `{"connect_args": {"read_only": true}}`
+3. No Superset, em *Settings → Database Connections → + Database → DuckDB*, use a SQLAlchemy URI:
 
-   O modo somente leitura evita que o Superset bloqueie o arquivo enquanto o dbt grava nele.
+   ```
+   duckdb:////app/duckdb/warehouse.duckdb?access_mode=read_only
+   ```
+
+   O `?access_mode=read_only` é obrigatório. O arquivo pertence ao usuário do Airflow, e o Superset só tem permissão de leitura: sem ele, a conexão falha com `Permission denied`. O modo somente leitura também evita que o Superset bloqueie o arquivo enquanto o dbt grava nele.
 
 Para rodar só o dbt, sem passar pelas DAGs:
 
