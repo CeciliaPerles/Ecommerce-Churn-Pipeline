@@ -72,4 +72,4 @@ select
     try_cast(EmailSubscribed as integer) as inscrito_email,
     try_cast(PushNotificationsEnabled as integer) as notificacoes_push_ativas
 
-from {{ ref('bronze_ecommerce') }}
+from {{ source('bronze', 'ecommerce') }}

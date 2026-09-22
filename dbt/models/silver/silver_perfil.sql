@@ -111,4 +111,4 @@ select
         else 'nao_informado'
     end as status_emprego
 
-from {{ ref('bronze_ecommerce') }}
+from {{ source('bronze', 'ecommerce') }}

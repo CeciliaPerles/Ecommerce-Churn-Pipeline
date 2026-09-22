@@ -32,4 +32,4 @@ select
     end as distancia_estoque_residencia,
     NumberOfAddress as quantidade_enderecos
 
-from {{ ref('bronze_ecommerce') }}
+from {{ source('bronze', 'ecommerce') }}
