@@ -87,14 +87,20 @@ services:
       POSTGRES_DB: superset
     volumes:
       - postgres_superset_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -h localhost -U superset -d superset"]
+      interval: 5s
+      retries: 10
 
   superset:
     build:
       context: ./superset
     container_name: superset
     depends_on:
-      - postgres_superset
-      - postgres_source
+      postgres_superset:
+        condition: service_healthy
+      postgres_source:
+        condition: service_started
     environment:
       SUPERSET_SECRET_KEY: dev_secret_key_superset
       DATABASE_DB: superset
